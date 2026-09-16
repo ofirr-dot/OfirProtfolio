@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>תיק Ofir</title>
+<meta name="description" content="ניהול תיק השקעות — IBKR, TASE, FAIR">
+<meta name="theme-color" content="#2D5BFF">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="תיק Ofir">
+<style>
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #F0F2F8; overflow: hidden;
+    font-family: 'Heebo', -apple-system, sans-serif;
+  }
+  #frame {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    border: none;
+    background: #F0F2F8;
+  }
+  #loader {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: #F0F2F8;
+    transition: opacity 0.4s ease;
+  }
+  #loader.hide { opacity: 0; pointer-events: none; }
+  .logo {
+    font-size: 42px; font-weight: 900; color: #0F1729;
+  }
+  .logo em { color: #2D5BFF; font-style: normal; }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 4px solid #E0E6F2; border-top-color: #2D5BFF;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  .hint { color: #5A6B92; font-size: 15px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="loader">
+  <div class="logo">תיק <em>Ofir</em></div>
+  <div class="spinner"></div>
+  <div class="hint">טוען את התיק…</div>
+</div>
+
+<iframe id="frame" title="תיק Ofir"
+        allow="clipboard-read; clipboard-write; fullscreen; publickey-credentials-create *; publickey-credentials-get *"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+<script>
+  /* ═══════════════════════════════════════════════════════════════
+     כתובת האפליקציה — ה-/exec של הדפלוימנט הפעיל שלך.
+     אם אי פעם יצרת דפלוימנט חדש ב-Apps Script: פתח את האתר
+     הרגיל, העתק את הכתובת משורת הכתובת (היא מסתיימת ב-/exec)
+     והדבק אותה כאן במקום. זה הכל.
+     ═══════════════════════════════════════════════════════════════ */
+  var APP_EMBED_URL = 'https://script.google.com/macros/s/AKfycby5wJgCWSZrZ6LHdzY2Vh0omIRp1kYqUoQtXxabu9Rg_Pd7OgYpwEhKZheVKTQmNDcq6g/exec';
+
+  var frame = document.getElementById('frame');
+  var loader = document.getElementById('loader');
+
+  frame.src = APP_EMBED_URL;
+
+  function hideLoader() {
+    loader.classList.add('hide');
+    setTimeout(function () { loader.remove(); }, 500);
+  }
+
+  frame.addEventListener('load', function () {
+    // עוד שנייה קטנה כדי שגם התוכן בפנים יתיישב
+    setTimeout(hideLoader, 600);
+  });
+
+  // רשת בטחון: אם ה-iframe לא מדווח תוך 15 שניות — מציגים בכל זאת
+  setTimeout(function () {
+    if (document.getElementById('loader')) hideLoader();
+  }, 15000);
+
+  // רישום Service Worker — חובה להתקנה אמיתית כאפליקציה
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function (e) {
+      console.warn('SW registration failed:', e);
+    });
+  }
+</script>
+</body>
+</html>
