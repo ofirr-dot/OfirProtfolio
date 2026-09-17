@@ -140,6 +140,12 @@
      ═══════════════════════════════════════════════════════════════ */
   var APP_EMBED_URL = 'https://script.google.com/macros/s/AKfycby5wJgCWSZrZ6LHdzY2Vh0omIRp1kYqUoQtXxabu9Rg_Pd7OgYpwEhKZheVKTQmNDcq6g/exec';
 
+  /* ✅ v3: cache-buster — כל טעינה של האפליקציה מקבלת כתובת ייחודית,
+     כך שהדפדפן בטלפון לעולם לא יגיש את הגרסה הקודמת מהמטמון שלו. */
+  function appUrl() {
+    return APP_EMBED_URL + (APP_EMBED_URL.indexOf('?') >= 0 ? '&' : '?') + 'rv=' + Date.now();
+  }
+
   var frame = document.getElementById('frame');
   var loader = document.getElementById('loader');
   var lock = document.getElementById('lock');
@@ -174,7 +180,7 @@
   /* ── חשיפת האפליקציה אחרי אימות ── */
   function unlockShell() {
     lock.classList.add('hide');
-    if (!appLoaded) frame.src = APP_EMBED_URL;
+    if (!appLoaded) frame.src = appUrl();
   }
 
   /* ── מצבי שער ── */
@@ -244,7 +250,7 @@
       bioBtn.classList.remove('busy');
       if (relockMode) {
         /* חזרה מנעילת חוסר-פעילות — ריענון האפליקציה וכניסה אוטומטית עם הטוקן הזכור */
-        frame.src = APP_EMBED_URL;
+        frame.src = appUrl();
         loader.classList.remove('hide');
         lock.classList.add('hide');
         setTimeout(function () { appLoaded = false; }, 100);
@@ -314,7 +320,7 @@
   showLock();
 
   /* טעינה מקדימה של האפליקציה מאחורי השער (לא נחשפת עד אימות) */
-  frame.src = APP_EMBED_URL;
+  frame.src = appUrl();
   appLoaded = true;
 
   /* Service Worker — חובה להתקנה אמיתית כאפליקציה */
