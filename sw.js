@@ -1,7 +1,7 @@
 /* Service Worker — מעטפת תיק Ofir
    מאפשר לכרום להציע "התקנת אפליקציה" אמיתית (WebAPK)
    ושומר את מסך הפתיחה מהמטמון גם בלי רשת. */
-var CACHE = 'ofir-shell-v3'; // ✅ v3: cache-buster ל-iframe — מבטיח שהאפליקציה תמיד טרייה
+var CACHE = 'ofir-shell-v4'; // ✅ v4: מעבר לפריסה הפעילה + shell=1 — זריקת מטמון הכרחית
 var ASSETS = [
   './',
   './index.html',
