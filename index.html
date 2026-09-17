@@ -138,12 +138,13 @@
      הרגיל, העתק את הכתובת משורת הכתובת (היא מסתיימת ב-/exec)
      והדבק אותה כאן במקום. זה הכל.
      ═══════════════════════════════════════════════════════════════ */
-  var APP_EMBED_URL = 'https://script.google.com/macros/s/AKfycby5wJgCWSZrZ6LHdzY2Vh0omIRp1kYqUoQtXxabu9Rg_Pd7OgYpwEhKZheVKTQmNDcq6g/exec';
+  var APP_EMBED_URL = 'https://script.google.com/macros/s/AKfycbz9rChZIM95O2FTNdw0W9P2Iir5wRYggO4nf5Jk2dH2wiNz_Iun18X2jeFZ7KQq2YqdRA/exec'; // ✅ v4: הפריסה הפעילה (זו שאתה מעדכן)
 
   /* ✅ v3: cache-buster — כל טעינה של האפליקציה מקבלת כתובת ייחודית,
      כך שהדפדפן בטלפון לעולם לא יגיש את הגרסה הקודמת מהמטמון שלו. */
   function appUrl() {
-    return APP_EMBED_URL + (APP_EMBED_URL.indexOf('?') >= 0 ? '&' : '?') + 'rv=' + Date.now();
+    // ✅ v4: shell=1 מסמן לאפליקציה שהיא בתוך המעטפת (מפעיל זכירת מכשיר) + ריענון מטמון
+    return APP_EMBED_URL + (APP_EMBED_URL.indexOf('?') >= 0 ? '&' : '?') + 'rv=' + Date.now() + '&shell=1';
   }
 
   var frame = document.getElementById('frame');
