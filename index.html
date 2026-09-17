@@ -179,9 +179,11 @@
   }
 
   /* ── חשיפת האפליקציה אחרי אימות ── */
-  function unlockShell() {
+  /* ✅ v5: via='bio' (טביעת אצבע) או 'pin' (כפתור הקוד) — האפליקציה מסתמכת על g=bio
+     כדי לאפשר חזרה לתיק אמיתי אחרי יציאה מדמו רק באימות ביומטרי. */
+  function unlockShell(via) {
     lock.classList.add('hide');
-    if (!appLoaded) frame.src = appUrl();
+    if (!appLoaded) frame.src = appUrl() + (via === 'pin' ? '&g=pin' : '&g=bio');
   }
 
   /* ── מצבי שער ── */
@@ -250,8 +252,8 @@
       }});
       bioBtn.classList.remove('busy');
       if (relockMode) {
-        /* חזרה מנעילת חוסר-פעילות — ריענון האפליקציה וכניסה אוטומטית עם הטוקן הזכור */
-        frame.src = appUrl();
+        /* חזרה מנעילת חוסר-פעילות / יציאה מדמו — ריענון עם אישור ביומטרי (g=bio) */
+        frame.src = appUrl() + '&g=bio';
         loader.classList.remove('hide');
         lock.classList.add('hide');
         setTimeout(function () { appLoaded = false; }, 100);
@@ -287,7 +289,7 @@
   });
 
   fallback.addEventListener('click', function () {
-    unlockShell(); /* הקוד/PIN ייבדק בתוך האפליקציה */
+    unlockShell('pin'); /* הקוד/PIN ייבדק בתוך האפליקציה */
   });
 
   /* ── הודעת נעילה מהאפליקציה (בקשר לאירוע visibility/auto-lock) ── */
