@@ -339,11 +339,33 @@
   frame.src = appUrl();
   appLoaded = true;
 
-  /* ═══ v7: כפתור חזרה של אנדרואיד — סנכרון היסטוריה עם האפליקציה ═══ */
+  /* ═══ v7+v8: כפתור חזרה של אנדרואיד — סנכרון היסטוריה עם האפליקציה ═══ */
   /* האפליקציה מדווחת nav-depth לכל שינוי עומק; המעטפת דוחפת/מרוקנת
-     היסטוריה בשמה דרך MessageChannel, וכפתור החזרה הפיזי חוזר שכבה-שכבה
-     (באנר → גיליון AI → פירוט → בית) במקום לזרוק את המשתמש מהאפליקציה. */
+     היסטוריה בשמה, וכפתור החזרה הפיזי חוזר שכבה-שכבה (באנר → גיליון AI
+     → פירוט → בית). בבית: לחיצה כפולה מהירה בלבד יוצאת, עם טוסט. */
   var _appDepth = 0, _shellDepth = 0, _pendingPops = 0, _appPort = null;
+  var _lastBackAt = 0;
+  function _appWin() {
+    try { var w = frame.contentWindow; while (w && w.frames && w.frames.length) w = w.frames[0]; return w; } catch (e) { return null; }
+  }
+  function _sendAppBack() {
+    if (_appPort) { try { _appPort.postMessage({ cmd: 'app-back' }); } catch (err) {} }
+    var _aw = _appWin();
+    if (_aw) { try { _aw.postMessage({ cmd: 'app-back' }, '*'); } catch (err) {} }
+  }
+  function _pushBaseline() { try { history.pushState({ base: 1 }, ''); } catch (e) {} }
+  _pushBaseline();
+  function _toastExit() {
+    var el = document.getElementById('exitToast');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'exitToast';
+      el.style.cssText = 'position:fixed;bottom:calc(28px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:rgba(15,23,41,0.92);color:#fff;padding:10px 22px;border-radius:14px;font-size:15px;z-index:99;white-space:nowrap;pointer-events:none;transition:opacity 0.3s;opacity:0';
+      document.body.appendChild(el);
+    }
+    el.textContent = 'לחץ חזרה שוב כדי לצאת';
+    el.style.opacity = '1';
+    setTimeout(function () { el.style.opacity = '0'; }, 2000);
+  }
   window.addEventListener('message', function (e) {
     if (!e.data) return;
     if (e.data.cmd === 'nav-port' && e.ports && e.ports.length) { _appPort = e.ports[0]; return; }
@@ -359,8 +381,13 @@
     if (_shellDepth > 0) {
       _shellDepth--;
       _appDepth = Math.max(0, _appDepth - 1);
-      if (_appPort) { try { _appPort.postMessage({ cmd: 'app-back' }); } catch (err) {} }
+      _sendAppBack();
+      return;
     }
+    /* ערך הבסיס נפרם — בבית: יציאה רק בלחיצה כפולה מהירה */
+    var now = Date.now();
+    if (now - _lastBackAt >= 2500) { _toastExit(); _pushBaseline(); }
+    _lastBackAt = now;
   });
 
   /* Service Worker — חובה להתקנה אמיתית כאפליקציה */
