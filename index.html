@@ -339,6 +339,30 @@
   frame.src = appUrl();
   appLoaded = true;
 
+  /* ═══ v7: כפתור חזרה של אנדרואיד — סנכרון היסטוריה עם האפליקציה ═══ */
+  /* האפליקציה מדווחת nav-depth לכל שינוי עומק; המעטפת דוחפת/מרוקנת
+     היסטוריה בשמה דרך MessageChannel, וכפתור החזרה הפיזי חוזר שכבה-שכבה
+     (באנר → גיליון AI → פירוט → בית) במקום לזרוק את המשתמש מהאפליקציה. */
+  var _appDepth = 0, _shellDepth = 0, _pendingPops = 0, _appPort = null;
+  window.addEventListener('message', function (e) {
+    if (!e.data) return;
+    if (e.data.cmd === 'nav-port' && e.ports && e.ports.length) { _appPort = e.ports[0]; return; }
+    if (e.data.cmd === 'nav-depth') {
+      var d = Number(e.data.depth) || 0;
+      if (d > _appDepth) { for (var i = _appDepth; i < d; i++) { _shellDepth++; history.pushState({ d: _shellDepth }, ''); } }
+      else if (d < _appDepth) { for (var j = d; j < _appDepth; j++) { _pendingPops++; history.back(); } }
+      _appDepth = d;
+    }
+  });
+  window.addEventListener('popstate', function () {
+    if (_pendingPops > 0) { _pendingPops--; return; }
+    if (_shellDepth > 0) {
+      _shellDepth--;
+      _appDepth = Math.max(0, _appDepth - 1);
+      if (_appPort) { try { _appPort.postMessage({ cmd: 'app-back' }); } catch (err) {} }
+    }
+  });
+
   /* Service Worker — חובה להתקנה אמיתית כאפליקציה */
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js', { scope: './', updateViaCache: 'none' }).catch(function (e) {
