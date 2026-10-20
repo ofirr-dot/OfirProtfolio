@@ -308,11 +308,24 @@
   function hideLoader() {
     loader.classList.add('hide');
   }
+  var loadFired = false;
   frame.addEventListener('load', function () {
     appLoaded = true;
+    loadFired = true;
     setTimeout(hideLoader, 600);
   });
   setTimeout(hideLoader, 15000);
+
+  /* ✅ v6: מצב רשת — הודעה ברורה בניתוק במקום ספינר אינסופי,
+     ורילוד אוטומטי כשהחיבור חוזר אם האפליקציה עוד לא נטענה */
+  var netHint = document.querySelector('#loader .hint');
+  window.addEventListener('offline', function () {
+    if (netHint) netHint.textContent = 'אין חיבור לאינטרנט — נמתין לרשת…';
+  });
+  window.addEventListener('online', function () {
+    if (netHint) netHint.textContent = 'הרשת חזרה — טוען את התיק…';
+    if (!loadFired) setTimeout(function () { location.reload(); }, 400);
+  });
 
   /* ── אתחול ── */
   if (!bioAvailable()) {
@@ -328,7 +341,7 @@
 
   /* Service Worker — חובה להתקנה אמיתית כאפליקציה */
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(function (e) {
+    navigator.serviceWorker.register('sw.js', { scope: './', updateViaCache: 'none' }).catch(function (e) {
       console.warn('SW registration failed:', e);
     });
   }
