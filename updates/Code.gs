@@ -19,7 +19,7 @@
 // - getDividendData לדף הדיבידנדים החדש
 // - cache לsettings
 // ✅ v11.4: מספר הגרסה המוצג בפינת האתר — עדכן כאן בכל העלאה לייצור
-var APP_VERSION = '13.4.7.3';
+var APP_VERSION = '13.4.7.4';
 // ✅ v11.5.0.2: כתובת הפריסה הפעילה (מהדגם שלך) — עדכן כאן רק אם תיצור פריסה חדשה
 var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz9rChZIM95O2FTNdw0W9P2Iir5wRYggO4nf5Jk2dH2wiNz_Iun18X2jeFZ7KQq2YqdRA/exec';
 const SS = SpreadsheetApp.getActiveSpreadsheet();
@@ -87,6 +87,43 @@ function doGet(e) {
       return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'sale err: ' + _saleErr })).setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // ✅ v13.4.7.4: אבחון טריגרים — ?triggers=UPDATE_TOKEN
+  if (e && e.parameter && e.parameter.triggers) {
+    try {
+      var _trTok = PropertiesService.getScriptProperties().getProperty('UPDATE_REMOTE_TOKEN') || '';
+      if (!_trTok || e.parameter.triggers !== _trTok) {
+        return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'unauthorized' })).setMimeType(ContentService.MimeType.JSON);
+      }
+      var _tr = ScriptApp.getProjectTriggers().map(function (t) {
+        return { fn: t.getHandlerFunction(), event: String(t.getEventType()), id: t.getUniqueId() };
+      });
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, version: APP_VERSION, count: _tr.length, triggers: _tr })).setMimeType(ContentService.MimeType.JSON);
+    } catch (_trE) {
+      return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'triggers: ' + _trE })).setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
+  // ✅ v13.4.7.4: הרצת סנכרון הפעילות (קניות+מכירות+דיבידנדים) — ?actsync=UPDATE_TOKEN
+  if (e && e.parameter && e.parameter.actsync) {
+    try {
+      var _asTok = PropertiesService.getScriptProperties().getProperty('UPDATE_REMOTE_TOKEN') || '';
+      if (!_asTok || e.parameter.actsync !== _asTok) {
+        return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'unauthorized' })).setMimeType(ContentService.MimeType.JSON);
+      }
+      var _has = (typeof IBKR_syncActivity === 'function');
+      var _res = null;
+      if (_has) { _res = IBKR_syncActivity(); }
+      Utilities.sleep(1500);
+      var _d = runIntegrityCheck();
+      return ContentService.createTextOutput(JSON.stringify({
+        ok: true, version: APP_VERSION, syncAvailable: _has, syncResult: _res || 'ran',
+        integrityAfter: _d.length, issues: _d
+      })).setMimeType(ContentService.MimeType.JSON);
+    } catch (_asE) {
+      return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'actsync: ' + _asE })).setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
   // ✅ v13.4.7.3: מחיקת שורת מכירה שהוזנה בטעות — ?delrow=UPDATE_TOKEN&sym=X&date=YYYY-MM-DD&qty=N
   if (e && e.parameter && e.parameter.delrow) {
     try {
@@ -4909,8 +4946,16 @@ function IBKR_autoSales() {
 
 // ── עדכון יומי — קורא לסיכום היומי ──
 function dailyPortfolioUpdate() {
-  // ✅ v13.4.7.0: ייבוא מכירות מ-IBKR לפני בדיקת השלמות
-  try { Logger.log('autoSales: ' + IBKR_autoSales()); } catch (eAS) { Logger.log('autoSales err: ' + eAS); }
+  // ✅ v13.4.7.4: סנכרון פעילות מלא (קניות + מכירות + דיבידנדים) לפני בדיקת השלמות.
+  //    IBKR_syncActivity הוא אותו מנוע ותיק עם דה-דופ לפי מזהה עסקה — הוא הגורם הרשמי.
+  try {
+    if (typeof IBKR_syncActivity === 'function') {
+      IBKR_syncActivity();
+      Logger.log('activity sync ran');
+    } else {
+      Logger.log('autoSales fallback: ' + IBKR_autoSales());
+    }
+  } catch (eAS) { Logger.log('activity sync err: ' + eAS); }
   // בדיקת שלמות
   REPORT_integrity();
   // סנאפשוט יומי
