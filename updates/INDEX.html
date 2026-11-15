@@ -651,7 +651,7 @@ html.is-mobile .heatmap-cell.hm-large {grid-column:span 2;grid-row:span 2;min-he
 .heatmap-cell.hm-large .hm-val{font-size:12px}
 .heatmap-legend {display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:1rem;justify-content:center}
 .heatmap-legend .hm-gradient {width:120px;height:10px;border-radius:5px;background:linear-gradient(90deg,#E8394A 0%,#3a3a3a 50%,#00A862 100%)}
-/* v13.4.7.3 — טרהמאפ אמיתי: אריחים לפי משקל */
+/* v13.4.7.4 — טרהמאפ אמיתי: אריחים לפי משקל */
 .treemap {position:relative;width:100%;height:440px;border-radius:14px;overflow:hidden;background:rgba(0,0,0,0.25);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06)}
 .tm-cell {position:absolute;box-sizing:border-box;left:0;top:0;padding:4px;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden;cursor:pointer;min-height:0 !important;min-width:0 !important;border-radius:0;border:2px solid rgba(0,0,0,0.22);transition:filter .15s}
 .tm-cell:hover {filter:brightness(1.18);z-index:2}
@@ -2053,7 +2053,7 @@ function renderAll(d){
 function isMobileDevice(){ return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent); }
 
 function renderMobileHome(d){
-  /* v13.4.7.3: ברירות מחדל הגנתיות — שדה חסר לא מפיל את מסך הבית */
+  /* v13.4.7.4: ברירות מחדל הגנתיות — שדה חסר לא מפיל את מסך הבית */
   d = d || {};
   d.summary = d.summary || { grandTotal: 0, totalReturn: 0, totalRetPct: 0, ibkrVal: 0, fairVal: 0 };
   d.meta = d.meta || { usdIls: 0, updatedAt: '' };
@@ -3687,7 +3687,7 @@ function renderWhatIf(r,resEl,ilsMode){ // ✅ v12.0.0.4: ilsMode=true → קר�
 }
 
 function renderFAIR(d){
-  /* v13.4.7.3: הגנה על שדות חסרים */
+  /* v13.4.7.4: הגנה על שדות חסרים */
   d = d || {};
   d.fair = d.fair || {};
   if (!d.fair.positions) d.fair.positions = [];
@@ -3732,7 +3732,7 @@ function _attachFairTapOnce(){
 }
 
 function renderCash(d){
-  /* v13.4.7.3: ברירות מחדל — מונע קריסת renderAll כשיש שדה חסר */
+  /* v13.4.7.4: ברירות מחדל — מונע קריסת renderAll כשיש שדה חסר */
   d = d || {};
   d.commissions = d.commissions || {};
   d.commissions.totals = d.commissions.totals || {};
@@ -5672,7 +5672,7 @@ function _treemapLayout(items, x, y, w, h, out) {
 }
 
 function renderHeatmap(d){
-  /* v13.4.7.3: טרהמאפ אמיתי — גודל אריח לפי משקל ההחזקה, צבע לפי תשואה */
+  /* v13.4.7.4: טרהמאפ אמיתי — גודל אריח לפי משקל ההחזקה, צבע לפי תשואה */
   const target = document.getElementById('tab-heatmap');
   if (!target) return;
   d = d || {};
